@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>高熵合金/硬质合金计算器</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+    <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
     
-    <!-- 配置Tailwind自定义颜色和字体 -->
     <script>
         tailwind.config = {
             theme: {
@@ -41,20 +43,38 @@
             }
         }
     </style>
+    <style>
+        /* 确保自动补全列表在输入框下方正确显示 */
+        .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1000;
+            background: white;
+            border: 1px solid #ccc;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .ui-menu-item-wrapper {
+            padding: 0.5rem 0.75rem;
+            cursor: pointer;
+        }
+        .ui-state-active, .ui-state-focus {
+            background: #e2e8f0; /* light gray */
+            border-color: #e2e8f0;
+            color: #2d3748; /* dark */
+        }
+    </style>
 </head>
 <body class="bg-neutral text-dark min-h-screen">
     <div class="container mx-auto px-4 py-8 max-w-7xl">
-        <!-- 标题区域 -->
         <header class="text-center mb-8">
             <h1 class="text-[clamp(1.8rem,4vw,2.5rem)] font-bold text-primary mb-2">高熵合金/硬质合金计算器</h1>
             <p class="text-gray-600 max-w-3xl mx-auto">用于计算高熵合金和硬质合金的成分、质量比例和理论密度等参数的专业工具</p>
         </header>
 
-        <!-- 主内容区 -->
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- 左侧控制面板 -->
             <div class="lg:col-span-2 space-y-6">
-                <!-- 计算模式选择 -->
                 <div class="bg-white rounded-xl p-6 card-shadow">
                     <h2 class="text-xl font-bold text-primary mb-4 flex items-center">
                         <i class="fa fa-cogs mr-2"></i>计算模式
@@ -77,12 +97,11 @@
                     </div>
                     
                     <div class="mb-4">
-                        <label for="totalMass" class="block text-sm font-medium text-gray-700 mb-2">总质量 (g):</label>
+                        <label for="totalMass" id="totalMassLabel" class="block text-sm font-medium text-gray-700 mb-2">总质量 (g):</label>
                         <input type="number" id="totalMass" value="100" min="0.01" step="0.01"
                             class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
                     </div>
                     
-                    <!-- 高熵合金模式输入选项 -->
                     <div id="heaaModeOptions" class="mb-4">
                         <label for="inputMode" class="block text-sm font-medium text-gray-700 mb-2">输入模式:</label>
                         <select id="inputMode" 
@@ -94,29 +113,30 @@
                         </select>
                     </div>
                     
-                    <!-- 硬质合金模式选项 -->
                     <div id="carbideModeOptions" class="hidden">
                         <h3 class="font-semibold text-gray-800 mb-3">硬质合金组成</h3>
                         
-                        <div class="mb-4">
-                            <label class="block text-sm font-medium text-gray-700 mb-2">硬质相类型:</label>
-                            <div class="flex space-x-4">
-                                <label class="inline-flex items-center">
-                                    <input type="radio" name="hardphaseType" value="single" checked 
-                                        class="w-4 h-4 text-primary focus:ring-primary">
-                                    <span class="ml-2">单一化合物</span>
-                                </label>
-                                <label class="inline-flex items-center">
-                                    <input type="radio" name="hardphaseType" value="he" 
-                                        class="w-4 h-4 text-primary focus:ring-primary">
-                                    <span class="ml-2">高熵硬质相</span>
-                                </label>
+                        <div class="p-4 border border-gray-200 rounded-lg mb-4 bg-gray-50">
+                            <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-diamond mr-2 text-red-600"></i>硬质相
+                            </h4>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">硬质相类型:</label>
+                                <div class="flex space-x-4">
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="hardphaseType" value="single" checked 
+                                            class="w-4 h-4 text-primary focus:ring-primary">
+                                        <span class="ml-2">单一化合物</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="radio" name="hardphaseType" value="he" 
+                                            class="w-4 h-4 text-primary focus:ring-primary">
+                                        <span class="ml-2">高熵硬质相</span>
+                                    </label>
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- 单一化合物输入 -->
-                        <div id="singleHardphase" class="mb-4">
-                            <div class="grid grid-cols-2 gap-4">
+                            
+                            <div id="singleHardphase" class="mb-4">
                                 <div>
                                     <label for="matrixCompound" class="block text-sm font-medium text-gray-700 mb-2">硬质相化合物:</label>
                                     <select id="matrixCompound" 
@@ -130,90 +150,108 @@
                                         <option value="Mo2C">Mo2C</option>
                                     </select>
                                 </div>
-                                <div>
-                                    <label for="matrixPercent" class="block text-sm font-medium text-gray-700 mb-2">质量百分比:</label>
-                                    <div class="flex">
-                                        <input type="number" id="matrixPercent" value="90" min="0" max="100" step="0.1"
-                                            class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-primary focus:border-primary">
-                                        <span class="px-3 py-2 bg-gray-100 border border-l-0 border-gray-300 rounded-r-lg">%</span>
+                            </div>
+                            
+                            <div id="heHardphase" class="hidden mb-4">
+                                <h4 class="font-medium text-gray-800 mb-3">高熵硬质相组成</h4>
+                                
+                                <div class="grid grid-cols-3 gap-4 mb-3 text-sm font-semibold">
+                                    <div>金属元素</div>
+                                    <div>原子比</div>
+                                    <div>碳化物类型</div>
+                                </div>
+                                
+                                <div id="hardphaseElements">
                                     </div>
+                                
+                                <div class="flex justify-center mt-4 space-x-3">
+                                    <button id="addHardphaseElement" type="button" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                                        <i class="fa fa-plus mr-1"></i> 添加元素
+                                    </button>
+                                    <button id="delHardphaseElement" type="button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                                        <i class="fa fa-minus mr-1"></i> 删除元素
+                                    </button>
                                 </div>
                             </div>
                         </div>
                         
-                        <!-- 高熵硬质相输入 -->
-                        <div id="heHardphase" class="hidden mb-4">
-                            <h4 class="font-medium text-gray-800 mb-3">高熵硬质相组成</h4>
+                        <div class="p-4 border border-gray-200 rounded-lg mb-4 bg-gray-50">
+                            <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-tint mr-2 text-green-600"></i>粘结相
+                            </h4>
                             
-                            <div class="grid grid-cols-3 gap-4 mb-3 text-sm font-semibold">
-                                <div>金属元素</div>
-                                <div>原子比</div>
-                                <div>碳化物类型</div>
-                            </div>
-                            
-                            <div id="hardphaseElements">
-                                <!-- 硬质相元素行将动态添加 -->
-                            </div>
-                            
-                            <div class="flex justify-center mt-4 space-x-3">
-                                <button id="addHardphaseElement" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
-                                    <i class="fa fa-plus mr-1"></i> 添加元素
-                                </button>
-                                <button id="delHardphaseElement" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
-                                    <i class="fa fa-minus mr-1"></i> 删除元素
-                                </button>
-                            </div>
-                            
-                            <div class="mt-4">
-                                <label for="hardphasePercent" class="block text-sm font-medium text-gray-700 mb-2">硬质相质量百分比:</label>
+                            <div class="mb-4">
+                                <label for="binderPercentInput" class="block text-sm font-medium text-gray-700 mb-2">粘结相质量百分比:</label>
                                 <div class="flex">
-                                    <input type="number" id="hardphasePercent" value="90" min="0" max="100" step="0.1"
+                                    <input type="number" id="binderPercentInput" value="10" min="0" max="100" step="0.1"
                                         class="flex-1 px-4 py-2 border border-gray-300 rounded-l-lg focus:ring-2 focus:ring-primary focus:border-primary">
                                     <span class="px-3 py-2 bg-gray-100 border border-l-0 border-gray-300 rounded-r-lg">%</span>
                                 </div>
                             </div>
-                        </div>
-                        
-                        <!-- 粘结相设置 -->
-                        <div class="mt-6 pt-4 border-t border-gray-200">
-                            <h4 class="font-medium text-gray-800 mb-3 flex items-center">
-                                <i class="fa fa-bond mr-2"></i>粘结相(高熵合金)
+                            
+                            <div>
+                                <label for="binderMode" class="block text-sm font-medium text-gray-700 mb-2">粘结相输入模式:</label>
+                                <select id="binderMode" 
+                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
+                                    <option value="atomicRatio">原子比</option>
+                                    <option value="massRatio">质量比</option>
+                                    <option value="massPercent">质量百分比</option>
+                                    <option value="massGrams">质量克</option>
+                                </select>
+                            </div>
+                            </div>
+
+                        <div class="p-4 border border-gray-200 rounded-lg mb-4 bg-gray-50">
+                            <h4 class="font-bold text-gray-800 mb-3 flex items-center">
+                                <i class="fa fa-flask mr-2 text-blue-600"></i>添加剂（默认质量百分比添加）
                             </h4>
                             
-                            <div class="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label for="binderMode" class="block text-sm font-medium text-gray-700 mb-2">输入模式:</label>
-                                    <select id="binderMode" 
-                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary">
-                                        <option value="atomicRatio">原子比</option>
-                                        <option value="massRatio">质量比</option>
-                                        <option value="massPercent">质量百分比</option>
-                                        <option value="massGrams">质量克</option>
-                                    </select>
+                            <div class="grid grid-cols-3 gap-4 mb-3 text-sm font-semibold">
+                                <div>来源类型</div>
+                                <div>元素/化合物</div>
+                                <div>质量百分比 (%)</div>
+                            </div>
+                            
+                            <div id="additiveElements">
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">粘结相百分比:</label>
-                                    <div class="flex">
-                                        <input type="text" id="binderPercent" value="10.0%" readonly
-                                            class="flex-1 px-4 py-2 bg-gray-50 border border-gray-300 rounded-l-lg text-secondary font-medium">
-                                    </div>
-                                </div>
+                            
+                            <div class="flex justify-center mt-4 space-x-3">
+                                <button id="addAdditiveElement" type="button" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                                    <i class="fa fa-plus mr-1"></i> 添加添加剂
+                                </button>
+                                <button id="delAdditiveElement" type="button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                                    <i class="fa fa-minus mr-1"></i> 删除添加剂
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="mt-4 grid grid-cols-3 gap-4">
+                            <div class="bg-white p-3 rounded-lg border border-gray-200">
+                                <p class="text-sm text-gray-600">粘结相占比</p>
+                                <p id="showBinderPercent" class="font-semibold text-primary">10.0%</p>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-gray-200">
+                                <p class="text-sm text-gray-600">添加剂占比</p>
+                                <p id="showAdditivePercent" class="font-semibold text-primary">0.0%</p>
+                            </div>
+                            <div class="bg-white p-3 rounded-lg border border-gray-200">
+                                <p class="text-sm text-gray-600">硬质相占比</p>
+                                <p id="showHardphasePercent" class="font-semibold text-primary">90.0%</p>
                             </div>
                         </div>
                     </div>
                 </div>
                 
-                <!-- 元素组成输入 -->
                 <div class="bg-white rounded-xl p-6 card-shadow">
                     <div class="flex justify-between items-center mb-4">
                         <h2 class="text-xl font-bold text-primary flex items-center">
                             <i class="fa fa-flask mr-2"></i><span id="elementsTitle">元素组成</span>
                         </h2>
                         <div class="flex space-x-3">
-                            <button id="addElement" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
+                            <button id="addElement" type="button" class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors">
                                 <i class="fa fa-plus mr-1"></i> 添加元素
                             </button>
-                            <button id="deleteElement" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
+                            <button id="deleteElement" type="button" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors">
                                 <i class="fa fa-minus mr-1"></i> 删除元素
                             </button>
                         </div>
@@ -227,11 +265,9 @@
                     </div>
                     
                     <div id="elementsContainer">
-                        <!-- 元素行将动态添加 -->
-                    </div>
+                        </div>
                 </div>
                 
-                <!-- 压制模具尺寸 (仅硬质合金模式显示) -->
                 <div id="moldDimensions" class="bg-white rounded-xl p-6 card-shadow hidden">
                     <h2 class="text-xl font-bold text-primary mb-4 flex items-center">
                         <i class="fa fa-cube mr-2"></i>压制模具尺寸 (mm)
@@ -264,15 +300,13 @@
                     </div>
                 </div>
                 
-                <!-- 计算按钮 -->
                 <div class="text-center">
-                    <button id="calculateBtn" class="px-8 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-medium">
+                    <button id="calculateBtn" type="button" class="px-8 py-3 bg-primary text-white rounded-lg hover:bg-primary/90 transition-colors text-lg font-medium">
                         <i class="fa fa-calculator mr-2"></i>计算
                     </button>
                 </div>
             </div>
             
-            <!-- 右侧结果显示 -->
             <div class="lg:col-span-1">
                 <div class="bg-white rounded-xl p-6 card-shadow h-full flex flex-col">
                     <h2 class="text-xl font-bold text-primary mb-4 flex items-center">
@@ -286,7 +320,6 @@
             </div>
         </main>
         
-        <!-- 页脚 -->
         <footer class="mt-12 text-center text-gray-500 text-sm">
             <p>高熵合金/硬质合金计算器 &copy; 2023</p>
         </footer>
@@ -309,8 +342,10 @@
             'Au': 196.97, 'Hg': 200.59, 'Tl': 204.38, 'Pb': 207.2, 'Bi': 208.98, 'Th': 232.04, 'Pa': 231.04,
             'U': 238.03
         };
-
-        // 常见碳化物类型和其原子比例关系
+        const allElements = Object.keys(atomicWeights); // 用于纯金属输入提示
+        const metalElements = allElements.filter(e => e !== 'C' && e !== 'O' && e !== 'N' && e !== 'H'); 
+        
+        // 常见碳化物类型和其原子比例关系 [金属原子数, 碳原子数]
         const carbideTypes = {
             'MC': [1, 1],  // 如TiC, WC
             'M2C': [2, 1],  // 如Mo2C, W2C
@@ -320,12 +355,15 @@
             'M23C6': [23, 6]  // 如Cr23C6
         };
 
+        // 常见碳化物/化合物列表 (用于选择)
+        const compoundList = ['WC', 'TiC', 'TaC', 'NbC', 'VC', 'Cr3C2', 'Mo2C', 'W2C', 'Co3W3C', 'Ni3W3C'];
+        
         // 常见材料的理论密度 (g/cm³)
         const materialDensities = {
             // 纯元素
             'W': 19.3, 'Ta': 16.4, 'Nb': 8.57, 'Ti': 4.51, 'Cr': 7.19, 'B': 2.34, 'Si': 2.33,
             'Mo': 10.22, 'V': 6.11, 'Fe': 7.87, 'Co': 8.9, 'Ni': 8.91,
-            'Al': 2.7, 'Cu': 8.96, 'C': 2.26,  // 碳使用石墨密度
+            'Al': 2.7, 'Cu': 8.96, 'C': 2.26, 
 
             // 碳化物
             'WC': 15.7, 'TiC': 4.93, 'TaC': 14.5, 'NbC': 7.82, 'VC': 5.77,
@@ -339,6 +377,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             // 获取DOM元素引用
             const calcModeRadios = document.querySelectorAll('input[name="calcMode"]');
+            const totalMassLabel = document.getElementById('totalMassLabel');
             const heaaModeOptions = document.getElementById('heaaModeOptions');
             const carbideModeOptions = document.getElementById('carbideModeOptions');
             const elementsTitle = document.getElementById('elementsTitle');
@@ -346,64 +385,101 @@
             const hardphaseTypeRadios = document.querySelectorAll('input[name="hardphaseType"]');
             const singleHardphase = document.getElementById('singleHardphase');
             const heHardphase = document.getElementById('heHardphase');
-            const matrixPercent = document.getElementById('matrixPercent');
-            const hardphasePercent = document.getElementById('hardphasePercent');
-            const binderPercent = document.getElementById('binderPercent');
+            const binderPercentInput = document.getElementById('binderPercentInput');
+            const showBinderPercent = document.getElementById('showBinderPercent');
+            const showAdditivePercent = document.getElementById('showAdditivePercent');
+            const showHardphasePercent = document.getElementById('showHardphasePercent');
             const elementsContainer = document.getElementById('elementsContainer');
             const hardphaseElements = document.getElementById('hardphaseElements');
+            const additiveElements = document.getElementById('additiveElements');
             const addElementBtn = document.getElementById('addElement');
             const deleteElementBtn = document.getElementById('deleteElement');
             const addHardphaseElementBtn = document.getElementById('addHardphaseElement');
             const delHardphaseElementBtn = document.getElementById('delHardphaseElement');
+            const addAdditiveElementBtn = document.getElementById('addAdditiveElement');
+            const delAdditiveElementBtn = document.getElementById('delAdditiveElement');
             const calculateBtn = document.getElementById('calculateBtn');
             const resultText = document.getElementById('resultText');
 
-            // 初始化元素行
-            function initElements() {
-                // 清空容器
-                elementsContainer.innerHTML = '';
-                
-                // 添加默认元素行
-                addElementRow('', 1);
-                addElementRow('', 1);
-                addElementRow('', 1);
-                addElementRow('', 1);
-                addElementRow('', 1);
+            // --- 核心功能函数定义 ---
+
+            // 应用自动补全到指定的输入框
+            function applyAutocomplete(inputElement) {
+                $(inputElement).autocomplete({
+                    source: function(request, response) {
+                        const term = $.ui.autocomplete.escapeRegex(request.term).toUpperCase();
+                        const matcher = new RegExp("^" + term, "i");
+                        // 允许用户输入所有元素，包括C, O等，但主要引导金属元素
+                        const filteredElements = allElements.filter(element => matcher.test(element));
+                        response(filteredElements);
+                    },
+                    minLength: 1,
+                    delay: 0
+                });
             }
 
-            // 初始化硬质相元素
+            // 初始化元素行（用于HEAA模式或硬质合金模式下的粘结相）
+            function initElements(mode = 'heaa') {
+                elementsContainer.innerHTML = '';
+                // 默认初始化5行
+                for(let i=0; i<5; i++) {
+                    addElementRow('', 1, 'pure', 'MC', mode);
+                }
+            }
+
+            // 初始化硬质相元素（用于高熵硬质相）
             function initHardphaseElements() {
-                // 清空容器
                 hardphaseElements.innerHTML = '';
-                
-                // 添加默认硬质相元素
                 addHardphaseElementRow('W', 1);
                 addHardphaseElementRow('Ta', 1);
                 addHardphaseElementRow('Nb', 1);
                 addHardphaseElementRow('Ti', 1);
             }
 
-            // 添加元素行
-            function addElementRow(element = '', ratio = 1) {
+            // 初始化添加剂元素（默认Cr3C2和TaC）
+            function initAdditiveElements() {
+                additiveElements.innerHTML = '';
+                addAdditiveElementRow('compound', 'Cr3C2', 0); // 默认Cr3C2化合物
+                addAdditiveElementRow('compound', 'TaC', 0);   // 默认TaC化合物
+                updatePhasePercentages(); // 初始化占比显示
+            }
+            
+            // 添加元素行（通用，支持纯金属输入框或下拉选择）
+            function addElementRow(element = '', ratio = 1, source = 'pure', carbideType = 'MC', mode = 'heaa') {
                 const row = document.createElement('div');
                 row.className = 'grid grid-cols-4 gap-4 mb-2 element-row';
                 row.dataset.index = elementsContainer.children.length;
                 
-                // 元素选择下拉框
-                const elementSelect = document.createElement('select');
-                elementSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary element-select';
-                elementSelect.innerHTML = `<option value="">选择元素</option>`;
+                // 元素输入/选择 (文本输入并应用自动补全 - 无论哪种模式，只要是纯金属都用文本输入)
+                let elementInput;
                 
-                // 添加所有元素选项
-                Object.keys(atomicWeights).forEach(elem => {
-                    const option = document.createElement('option');
-                    option.value = elem;
-                    option.textContent = elem;
-                    if (elem === element) option.selected = true;
-                    elementSelect.appendChild(option);
-                });
+                const createElementInput = (currentSource) => {
+                    let input;
+                    if (currentSource === 'pure' || mode === 'heaa') { // HEAA模式下，所有元素都用文本输入
+                        input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = element;
+                        input.placeholder = '如: Co, Fe, C...';
+                        input.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary element-input pure-metal-input';
+                        setTimeout(() => applyAutocomplete(input), 0); // 应用自动补全
+                    } else {
+                        // 硬质合金模式下，如果是碳化物来源，则强制使用选择框 (避免用户输错碳化物)
+                        input = document.createElement('select');
+                        input.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary element-select';
+                        input.innerHTML = `<option value="">选择元素</option>`;
+                        metalElements.forEach(elem => {
+                            const option = document.createElement('option');
+                            option.value = elem;
+                            option.textContent = elem;
+                            if (elem === element) option.selected = true;
+                            input.appendChild(option);
+                        });
+                    }
+                    return input;
+                };
+
+                elementInput = createElementInput(source);
                 
-                // 比例输入框
                 const ratioInput = document.createElement('input');
                 ratioInput.type = 'number';
                 ratioInput.value = ratio;
@@ -411,57 +487,59 @@
                 ratioInput.step = 0.001;
                 ratioInput.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary ratio-input';
                 
-                // 来源选择
                 const sourceSelect = document.createElement('select');
                 sourceSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary source-select';
                 sourceSelect.innerHTML = `
                     <option value="pure">纯金属</option>
                     <option value="carbide">碳化物</option>
                 `;
+                sourceSelect.value = source;
                 
-                // 碳化物类型选择
                 const carbideTypeSelect = document.createElement('select');
-                carbideTypeSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary carbide-type-select hidden';
+                carbideTypeSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary carbide-type-select';
                 Object.keys(carbideTypes).forEach(type => {
                     const option = document.createElement('option');
                     option.value = type;
                     option.textContent = type;
-                    if (type === 'MC') option.selected = true;
+                    if (type === carbideType) option.selected = true;
                     carbideTypeSelect.appendChild(option);
                 });
                 
-                // 组装行
-                row.appendChild(elementSelect);
+                row.appendChild(elementInput);
                 row.appendChild(ratioInput);
                 row.appendChild(sourceSelect);
                 row.appendChild(carbideTypeSelect);
-                
-                // 添加到容器
                 elementsContainer.appendChild(row);
                 
-                // 添加来源选择变化事件
+                // 切换元素输入框/选择框
                 sourceSelect.addEventListener('change', function() {
-                    if (this.value === 'carbide') {
-                        carbideTypeSelect.classList.remove('hidden');
-                    } else {
-                        carbideTypeSelect.classList.add('hidden');
+                    const newSource = this.value;
+                    carbideTypeSelect.classList.toggle('hidden', newSource !== 'carbide');
+                    
+                    // 只有在硬质合金模式下，并且从纯金属切换到碳化物时，才切换元素选择框类型
+                    if (mode === 'carbide') {
+                        const oldElementInput = row.querySelector('.element-input, .element-select');
+                        // 核心逻辑：粘结相中，纯金属是文本+补全，碳化物来源是下拉选择
+                        const newElementInput = createElementInput(newSource); 
+                        row.replaceChild(newElementInput, oldElementInput);
                     }
                 });
+
+                // 初始化状态显示
+                carbideTypeSelect.classList.toggle('hidden', sourceSelect.value !== 'carbide');
             }
 
-            // 添加硬质相元素行
+            // 添加硬质相元素行（HE Hardphase）
             function addHardphaseElementRow(element = '', ratio = 1) {
                 const row = document.createElement('div');
                 row.className = 'grid grid-cols-3 gap-4 mb-2 hardphase-row';
                 row.dataset.index = hardphaseElements.children.length;
                 
-                // 元素选择下拉框
+                // 硬质相元素使用下拉选择，保证元素是金属
                 const elementSelect = document.createElement('select');
                 elementSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary hp-element-select';
-                elementSelect.innerHTML = `<option value="">选择元素</option>`;
-                
-                // 添加所有元素选项
-                Object.keys(atomicWeights).forEach(elem => {
+                elementSelect.innerHTML = `<option value="">选择金属</option>`;
+                metalElements.forEach(elem => {
                     const option = document.createElement('option');
                     option.value = elem;
                     option.textContent = elem;
@@ -469,7 +547,6 @@
                     elementSelect.appendChild(option);
                 });
                 
-                // 比例输入框
                 const ratioInput = document.createElement('input');
                 ratioInput.type = 'number';
                 ratioInput.value = ratio;
@@ -477,7 +554,6 @@
                 ratioInput.step = 0.001;
                 ratioInput.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary hp-ratio-input';
                 
-                // 碳化物类型选择
                 const carbideTypeSelect = document.createElement('select');
                 carbideTypeSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary hp-carbide-type-select';
                 Object.keys(carbideTypes).forEach(type => {
@@ -488,643 +564,743 @@
                     carbideTypeSelect.appendChild(option);
                 });
                 
-                // 组装行
                 row.appendChild(elementSelect);
                 row.appendChild(ratioInput);
                 row.appendChild(carbideTypeSelect);
-                
-                // 添加到容器
                 hardphaseElements.appendChild(row);
             }
 
-            // 更新粘结相百分比
-            function updateBinderPercent() {
-                let matrixPercentValue = 0;
-                if (document.querySelector('input[name="hardphaseType"]:checked').value === 'single') {
-                    matrixPercentValue = parseFloat(matrixPercent.value) || 0;
-                } else {
-                    matrixPercentValue = parseFloat(hardphasePercent.value) || 0;
-                }
-                const binderPercentValue = 100 - matrixPercentValue;
-                binderPercent.value = `${binderPercentValue.toFixed(1)}%`;
+            // 添加添加剂元素行（支持化合物/纯金属，默认质量百分比）
+            function addAdditiveElementRow(initSource = 'compound', initValue = 'Cr3C2', initPercent = 0) {
+                const row = document.createElement('div');
+                row.className = 'grid grid-cols-3 gap-4 mb-2 additive-row';
+                row.dataset.index = additiveElements.children.length;
+                
+                // 来源类型选择（纯金属/碳化物）
+                const sourceTypeSelect = document.createElement('select');
+                sourceTypeSelect.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary additive-source-select';
+                sourceTypeSelect.innerHTML = `
+                    <option value="pure">纯金属</option>
+                    <option value="compound">碳化物</option>
+                `;
+                sourceTypeSelect.value = initSource;
+                
+                // 元素/化合物输入/选择 (纯金属文本输入 + 自动补全)
+                const createContentInput = (currentSource, initialVal) => {
+                    let input;
+                    if (currentSource === 'pure') {
+                        // 纯金属：文本输入 + 自动补全
+                        input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = initialVal; 
+                        input.placeholder = '如: V, Nb...';
+                        input.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary additive-content-input pure-metal-input';
+                        setTimeout(() => applyAutocomplete(input), 0); // 应用自动补全
+                    } else {
+                        // 碳化物：下拉选择
+                        input = document.createElement('select');
+                        input.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary additive-content-select';
+                        compoundList.forEach(comp => {
+                            const option = document.createElement('option');
+                            option.value = comp;
+                            option.textContent = comp;
+                            if (comp === initialVal) option.selected = true;
+                            input.appendChild(option);
+                        });
+                    }
+                    return input;
+                };
+
+                const contentInput = createContentInput(initSource, initValue);
+
+                // 质量百分比输入
+                const percentInput = document.createElement('input');
+                percentInput.type = 'number';
+                percentInput.value = initPercent;
+                percentInput.min = 0;
+                percentInput.max = 100;
+                percentInput.step = 0.1;
+                percentInput.className = 'px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary additive-percent-input';
+                
+                // 组装行
+                row.appendChild(sourceTypeSelect);
+                row.appendChild(contentInput);
+                row.appendChild(percentInput);
+                additiveElements.appendChild(row);
+                
+                // 来源类型切换时更新内容选项
+                sourceTypeSelect.addEventListener('change', function() {
+                    const newSource = this.value;
+                    const oldContentInput = row.querySelector('.additive-content-input, .additive-content-select');
+                    
+                    let initialVal = '';
+                    if (newSource === 'pure') {
+                        initialVal = '';
+                    } else {
+                        initialVal = 'WC';
+                    }
+
+                    const newContentInput = createContentInput(newSource, initialVal);
+                    row.replaceChild(newContentInput, oldContentInput);
+
+                    updatePhasePercentages(); // 切换类型可能影响添加剂总质量
+                });
+                
+                // 百分比变化时更新相占比显示
+                percentInput.addEventListener('input', updatePhasePercentages);
             }
 
-            // 切换计算模式
-            function toggleCalcMode() {
-                const selectedMode = document.querySelector('input[name="calcMode"]:checked').value;
+            // 更新相占比显示
+            function updatePhasePercentages() {
+                const binderPercent = parseFloat(binderPercentInput.value) || 0;
                 
-                if (selectedMode === 'heaa') {
+                let additiveTotalPercent = 0;
+                document.querySelectorAll('.additive-percent-input').forEach(input => {
+                    additiveTotalPercent += parseFloat(input.value) || 0;
+                });
+
+                const totalOtherPercent = binderPercent + additiveTotalPercent;
+                const hardphasePercent = Math.max(0, 100 - totalOtherPercent); // 硬质相占比为剩余部分
+
+                // 检查总比例是否超过100% (仅在显示上进行警告，不自动修正输入值)
+                const isOver100 = totalOtherPercent > 100.01;
+
+                showBinderPercent.textContent = `${binderPercent.toFixed(1)}%`;
+                showAdditivePercent.textContent = `${additiveTotalPercent.toFixed(1)}%`;
+                showHardphasePercent.textContent = `${hardphasePercent.toFixed(1)}%`;
+                
+                [showBinderPercent, showAdditivePercent, showHardphasePercent].forEach(elem => {
+                    elem.classList.toggle('text-red-600', isOver100);
+                    elem.classList.toggle('text-primary', !isOver100);
+                });
+            }
+
+            // 模式切换函数
+            function switchMode(mode) {
+                // 在切换模式时，销毁可能存在的旧元素的 autocomplete 实例
+                document.querySelectorAll('.pure-metal-input').forEach(input => {
+                    if ($(input).data('ui-autocomplete')) {
+                        $(input).autocomplete('destroy');
+                    }
+                });
+
+                if (mode === 'heaa') {
+                    totalMassLabel.textContent = '总质量 (g):';
                     heaaModeOptions.classList.remove('hidden');
                     carbideModeOptions.classList.add('hidden');
-                    elementsTitle.textContent = '元素组成';
+                    elementsTitle.textContent = '元素组成 (高熵合金)';
                     moldDimensions.classList.add('hidden');
+                    initElements('heaa'); // 重新初始化元素行（HEAA模式，元素输入都为文本+补全）
+                    // 隐藏硬质相/碳化物选项
+                    document.querySelectorAll('.source-select').forEach(select => select.value = 'pure');
+                    document.querySelectorAll('.carbide-type-select').forEach(select => select.classList.add('hidden'));
                 } else {
+                    // carbide
+                    totalMassLabel.textContent = '硬质合金总质量 (g):'; 
                     heaaModeOptions.classList.add('hidden');
                     carbideModeOptions.classList.remove('hidden');
                     elementsTitle.textContent = '粘结相元素组成';
                     moldDimensions.classList.remove('hidden');
-                    toggleHardphaseType(); // 确保硬质相类型显示正确
-                    updateBinderPercent();
+                    initElements('carbide'); // 重新初始化元素行（硬质合金模式-粘结相）
+                    initHardphaseElements(); // 初始化高熵硬质相元素
+                    initAdditiveElements(); // 初始化添加剂元素
+                    updatePhasePercentages(); // 初始化百分比显示
                 }
             }
 
-            // 切换硬质相类型
-            function toggleHardphaseType() {
-                const selectedType = document.querySelector('input[name="hardphaseType"]:checked').value;
+            // 解析化学式，返回 {元素: 原子数} 和分子量
+            function parseCompound(formula) {
+                const parts = formula.match(/([A-Z][a-z]*)(\d*)/g);
+                const composition = {};
+                let molecularWeight = 0;
                 
-                if (selectedType === 'single') {
-                    singleHardphase.classList.remove('hidden');
-                    heHardphase.classList.add('hidden');
-                } else {
-                    singleHardphase.classList.add('hidden');
-                    heHardphase.classList.remove('hidden');
-                }
-                updateBinderPercent();
-            }
+                if (!parts) return { composition: {}, molecularWeight: 0 };
 
-            // 解析化合物化学式
-            function parseCompound(compound, metalElement = null) {
-                // 如果提供了金属元素，将M替换为实际金属元素
-                if (metalElement && compound.includes('M')) {
-                    compound = compound.replace('M', metalElement);
-                }
-
-                // 支持简单化学式如WC, TiC, Cr3C2等
-                const elements = {};
-                const pattern = /([A-Z][a-z]?)(\d*)/g;
-                let match;
-
-                while ((match = pattern.exec(compound)) !== null) {
+                for (let part of parts) {
+                    const match = part.match(/([A-Z][a-z]*)(\d*)/);
+                    if (!match) continue;
+                    
                     const element = match[1];
-                    const countStr = match[2];
+                    const count = parseInt(match[2] || '1');
                     
-                    if (!atomicWeights[element]) {
-                        throw new Error(`未知元素: ${element}`);
+                    if (atomicWeights[element]) {
+                        composition[element] = (composition[element] || 0) + count;
+                        molecularWeight += atomicWeights[element] * count;
                     }
-                    
-                    const count = countStr ? parseInt(countStr) : 1;
-                    elements[element] = (elements[element] || 0) + count;
                 }
-
-                return elements;
+                return { composition, molecularWeight };
             }
 
-            // 计算材料的理论密度
-            function calculateDensity(elements, masses) {
-                if (!elements || !masses || elements.length !== masses.length) {
-                    return 0;
-                }
-
-                // 计算各元素的质量分数
-                const totalMass = masses.reduce((sum, mass) => sum + mass, 0);
-                const massFractions = masses.map(mass => mass / totalMass);
-
-                // 获取各元素的密度
-                const elementDensities = elements.map(element => {
-                    if (materialDensities[element]) {
-                        return materialDensities[element];
-                    }
-                    // 如果找不到密度数据，使用近似值
-                    return 8.5; // 金属元素通常密度在7-10 g/cm³之间
-                });
-
-                // 使用混合法则计算理论密度
-                // 1/ρ = Σ(w_i/ρ_i)
-                let inverseDensity = 0;
-                for (let i = 0; i < elements.length; i++) {
-                    inverseDensity += massFractions[i] / elementDensities[i];
-                }
-
-                return inverseDensity > 0 ? 1 / inverseDensity : 0;
-            }
-
-            // 计算碳化物质量
-            function calculateCarbideMass(element, elementMass, carbideType) {
-                if (!carbideTypes[carbideType]) {
-                    throw new Error(`未知的碳化物类型: ${carbideType}`);
-                }
-
-                const [metalAtoms, carbonAtoms] = carbideTypes[carbideType];
-
-                // 计算碳化物中该元素的质量分数
-                const carbideMolarMass = metalAtoms * atomicWeights[element] + carbonAtoms * atomicWeights['C'];
-                const elementFraction = (metalAtoms * atomicWeights[element]) / carbideMolarMass;
-
-                // 计算所需碳化物质量
-                const carbideMass = elementMass / elementFraction;
-
-                // 计算碳化物中的碳质量
-                const carbonMass = carbideMass * (carbonAtoms * atomicWeights['C']) / carbideMolarMass;
-
-                return [carbideMass, carbonMass];
-            }
-
-            // 执行计算
+            // 计算函数
             function calculate() {
-                try {
-                    // 清空结果
-                    resultText.textContent = '';
+                const currentMode = document.querySelector('input[name="calcMode"]:checked').value;
+                const totalMass = parseFloat(document.getElementById('totalMass').value);
+                
+                if (isNaN(totalMass) || totalMass <= 0) {
+                    resultText.textContent = '错误: 总质量必须大于0。';
+                    return;
+                }
+
+                let results = `计算结果:\n\n`;
+                let totalC_g = 0;
+                let totalMass_g = 0;
+                let totalVolume_cm3 = 0;
+                
+                if (currentMode === 'heaa') {
+                    // --- 高熵合金模式计算 ---
+                    const inputMode = document.getElementById('inputMode').value;
+                    const elementRows = Array.from(elementsContainer.querySelectorAll('.element-row'));
                     
-                    // 获取总质量
-                    const totalMass = parseFloat(document.getElementById('totalMass').value);
-                    if (isNaN(totalMass) || totalMass <= 0) {
-                        throw new Error("总质量必须大于0");
-                    }
-
-                    // 收集元素和比例数据
-                    const elements = [];
-                    const ratios = [];
-                    const sources = []; // 元素来源（纯金属或碳化物）
-                    const carbideTypesList = []; // 碳化物类型
-
-                    const elementRows = document.querySelectorAll('.element-row');
+                    let elementsData = [];
                     elementRows.forEach(row => {
-                        const element = row.querySelector('.element-select').value;
-                        if (!element) return; // 跳过空元素
-                        
-                        if (!atomicWeights[element]) {
-                            throw new Error(`无效的元素符号: ${element}`);
-                        }
-
-                        const ratio = parseFloat(row.querySelector('.ratio-input').value);
-                        if (isNaN(ratio) || ratio <= 0) {
-                            throw new Error("比例必须大于0");
-                        }
-
+                        // HEAA模式下，元素输入框为文本输入框（.element-input）
+                        const element = row.querySelector('.element-input').value.trim(); 
+                        const ratio = parseFloat(row.querySelector('.ratio-input').value) || 0;
                         const source = row.querySelector('.source-select').value;
                         const carbideType = row.querySelector('.carbide-type-select').value;
-
-                        elements.push(element);
-                        ratios.push(ratio);
-                        sources.push(source);
-                        carbideTypesList.push(carbideType);
+                        
+                        if (element && ratio > 0) {
+                            elementsData.push({ element, ratio, source, carbideType });
+                        }
                     });
 
-                    if (elements.length === 0) {
-                        throw new Error("至少需要输入一个元素");
+                    if (elementsData.length === 0) {
+                        resultText.textContent = '错误: 请输入至少一个元素及其比例。';
+                        return;
                     }
 
-                    // 高熵合金模式
-                    const calcMode = document.querySelector('input[name="calcMode"]:checked').value;
-                    const resultLines = [];
+                    // 1. 标准化比例/计算总摩尔数/总质量
+                    let normalizedData = [];
+                    let totalMoles = 0;      
+                    let totalMass_input = 0; 
 
-                    if (calcMode === 'heaa') {
-                        resultLines.push("高熵合金计算结果:");
-                        
-                        const selectedMode = document.getElementById('inputMode').value;
-                        let masses = [];
-
-                        if (selectedMode === 'atomicRatio') {
-                            // 计算各元素的摩尔质量
-                            const molarMasses = elements.map((elem, i) => ratios[i] * atomicWeights[elem]);
-                            const totalMolarMass = molarMasses.reduce((sum, mm) => sum + mm, 0);
-
-                            // 计算各元素质量
-                            masses = molarMasses.map(mm => totalMass * mm / totalMolarMass);
-                        } 
-                        else if (selectedMode === 'massRatio') {
-                            const totalRatio = ratios.reduce((sum, r) => sum + r, 0);
-                            masses = ratios.map(r => totalMass * r / totalRatio);
-                        } 
-                        else if (selectedMode === 'massPercent') {
-                            const totalPercent = ratios.reduce((sum, r) => sum + r, 0);
-                            if (Math.abs(totalPercent - 100) > 0.1) { // 允许0.1%的误差
-                                throw new Error("质量百分比总和必须为100%");
-                            }
-                            masses = ratios.map(r => totalMass * r / 100);
-                        } 
-                        else if (selectedMode === 'massGrams') {
-                            const totalInputMass = ratios.reduce((sum, r) => sum + r, 0);
-                            if (Math.abs(totalInputMass - totalMass) > 0.001) { // 允许1mg误差
-                                throw new Error(`输入质量总和(${totalInputMass}g)与总质量(${totalMass}g)不匹配`);
-                            }
-                            masses = ratios;
-                        }
-
-                        // 计算各元素的原子百分比
-                        const atomicMasses = elements.map((elem, i) => masses[i] / atomicWeights[elem]);
-                        const totalAtoms = atomicMasses.reduce((sum, am) => sum + am, 0);
-
-                        // 显示各元素结果
-                        let totalCalculated = 0;
-                        elements.forEach((elem, i) => {
-                            const mass = masses[i];
-                            const percent = mass / totalMass * 100;
-                            const atomicPercent = (masses[i] / atomicWeights[elem]) / totalAtoms * 100;
-                            
-                            resultLines.push(`${elem}: ${mass.toFixed(4)} g (${percent.toFixed(2)} wt%, ${atomicPercent.toFixed(2)} at%)`);
-                            totalCalculated += mass;
-                        });
-
-                        // 计算理论密度
-                        const heaDensity = calculateDensity(elements, masses);
-                        resultLines.push(`\n理论密度: ${heaDensity.toFixed(2)} g/cm³`);
-
-                        // 添加总计信息
-                        resultLines.push(`\n总计: ${totalCalculated.toFixed(4)} g`);
-                    } 
-                    // 硬质合金模式
-                    else {
-                        resultLines.push("硬质合金计算结果:");
-                        
-                        let matrixPercentValue, matrixCompound, metalElements = [], metalRatios = [], carbideTypesHP = [];
-                        
-                        if (document.querySelector('input[name="hardphaseType"]:checked').value === 'single') {
-                            // 单一化合物硬质相
-                            matrixCompound = document.getElementById('matrixCompound').value;
-                            matrixPercentValue = parseFloat(document.getElementById('matrixPercent').value);
-                            
-                            if (isNaN(matrixPercentValue) || matrixPercentValue <= 0 || matrixPercentValue > 100) {
-                                throw new Error("硬质相百分比必须在0-100之间");
-                            }
-                        } else {
-                            // 高熵硬质相
-                            matrixPercentValue = parseFloat(document.getElementById('hardphasePercent').value);
-                            
-                            if (isNaN(matrixPercentValue) || matrixPercentValue <= 0 || matrixPercentValue > 100) {
-                                throw new Error("硬质相百分比必须在0-100之间");
-                            }
-                            
-                            // 收集高熵硬质相金属元素和比例
-                            const hpRows = document.querySelectorAll('.hardphase-row');
-                            hpRows.forEach(row => {
-                                const element = row.querySelector('.hp-element-select').value;
-                                if (!element) return;
-                                
-                                if (!atomicWeights[element]) {
-                                    throw new Error(`硬质相无效的元素符号: ${element}`);
-                                }
-                                
-                                const ratio = parseFloat(row.querySelector('.hp-ratio-input').value);
-                                if (isNaN(ratio) || ratio <= 0) {
-                                    throw new Error("硬质相比例必须大于0");
-                                }
-                                
-                                const cType = row.querySelector('.hp-carbide-type-select').value;
-                                if (!carbideTypes[cType]) {
-                                    throw new Error(`未知的碳化物类型: ${cType}`);
-                                }
-                                
-                                metalElements.push(element);
-                                metalRatios.push(ratio);
-                                carbideTypesHP.push(cType);
-                            });
-                            
-                            if (metalElements.length === 0) {
-                                throw new Error("硬质相至少需要输入一个金属元素");
-                            }
+                    elementsData.forEach(item => {
+                        if (!atomicWeights[item.element]) {
+                            results += `警告: 元素 ${item.element} 的原子量未知，已跳过。\n`;
+                            return;
                         }
                         
-                        // 计算粘结相质量
-                        const binderPercentValue = 100 - matrixPercentValue;
-                        const binderMass = totalMass * binderPercentValue / 100;
-                        
-                        // 计算粘结相中各元素质量
-                        const selectedMode = document.getElementById('binderMode').value;
-                        let binderMassesRaw = [];
-                        
-                        if (selectedMode === 'atomicRatio') {
-                            // 计算各元素的摩尔质量
-                            const molarMasses = elements.map((elem, i) => ratios[i] * atomicWeights[elem]);
-                            const totalMolarMass = molarMasses.reduce((sum, mm) => sum + mm, 0);
-                            binderMassesRaw = molarMasses.map(mm => binderMass * mm / totalMolarMass);
-                        } 
-                        else if (selectedMode === 'massRatio') {
-                            const totalRatio = ratios.reduce((sum, r) => sum + r, 0);
-                            binderMassesRaw = ratios.map(r => binderMass * r / totalRatio);
-                        } 
-                        else if (selectedMode === 'massPercent') {
-                            const totalPercent = ratios.reduce((sum, r) => sum + r, 0);
-                            if (Math.abs(totalPercent - 100) > 0.1) {
-                                throw new Error("粘结相质量百分比总和必须为100%");
-                            }
-                            binderMassesRaw = ratios.map(r => binderMass * r / 100);
-                        } 
-                        else if (selectedMode === 'massGrams') {
-                            const totalInputMass = ratios.reduce((sum, r) => sum + r, 0);
-                            if (Math.abs(totalInputMass - binderMass) > 0.001) {
-                                throw new Error(`输入质量总和(${totalInputMass}g)与粘结相质量(${binderMass}g)不匹配`);
-                            }
-                            binderMassesRaw = ratios;
-                        }
-                        
-                        // 处理通过碳化物引入的元素
-                        const binderMasses = [];
-                        const carbideAdditions = []; // 存储元组 [carbideType, metalElement, mass]
-                        let carbonFromCarbides = 0; // 从碳化物中引入的碳质量
-                        
-                        elements.forEach((elem, i) => {
-                            const elementMass = binderMassesRaw[i];
-                            
-                            if (sources[i] === 'carbide') {
-                                const carbideType = carbideTypesList[i];
-                                const [carbideMass, carbonMass] = calculateCarbideMass(elem, elementMass, carbideType);
-                                
-                                // 记录碳化物添加量
-                                carbideAdditions.push([carbideType, elem, carbideMass]);
-                                carbonFromCarbides += carbonMass;
-                                
-                                // 对于通过碳化物引入的元素，其质量为0
-                                binderMasses.push(0);
-                            } else {
-                                // 对于纯金属元素，直接使用计算的质量
-                                binderMasses.push(elementMass);
-                            }
-                        });
-                        
-                        // 计算实际粘结相总质量（纯金属 + 碳化物）
-                        const actualBinderMass = binderMasses.reduce((sum, m) => sum + m, 0) + 
-                                               carbideAdditions.reduce((sum, [_, __, mass]) => sum + mass, 0);
-                        
-                        // 调整硬质相质量以确保总质量正确
-                        let matrixMass = totalMass - actualBinderMass;
-                        
-                        // 如果硬质相质量小于0，报错
-                        if (matrixMass < 0) {
-                            throw new Error("粘结相质量超过总质量，请减少粘结相比例或元素质量");
-                        }
-                        
-                        // 初始化总碳量变量
-                        let totalCarbonMass = 0;
-                        let matrixElements = [], matrixMasses = [];
-                        
-                        // 传统硬质相计算
-                        if (document.querySelector('input[name="hardphaseType"]:checked').value === 'single') {
-                            // 解析硬质相化合物
-                            const compoundElements = parseCompound(matrixCompound);
-                            
-                            // 计算化合物分子量
-                            let compoundMass = 0;
-                            for (const [elem, count] of Object.entries(compoundElements)) {
-                                compoundMass += atomicWeights[elem] * count;
-                            }
-                            
-                            // 计算硬质相中各元素质量
-                            const matrixResults = [];
-                            for (const [elem, count] of Object.entries(compoundElements)) {
-                                const elementMass = matrixMass * (atomicWeights[elem] * count) / compoundMass;
-                                matrixResults.push([elem, elementMass]);
-                                
-                                // 如果是碳元素，记录碳质量
-                                if (elem === 'C') {
-                                    totalCarbonMass += elementMass;
-                                }
-                            }
-                            
-                            // 添加到结果
-                            resultLines.push(`\n硬质相(${matrixCompound}, ${(matrixMass / totalMass * 100).toFixed(1)}%):`);
-                            let totalMatrix = 0;
-                            matrixResults.forEach(([elem, mass]) => {
-                                const percent = mass / totalMass * 100;
-                                resultLines.push(`  ${elem}: ${mass.toFixed(4)} g (${percent.toFixed(2)} wt%)`);
-                                totalMatrix += mass;
-                            });
-                            
-                            resultLines.push(`  硬质相总计: ${totalMatrix.toFixed(4)} g`);
-                            
-                            // 元素和质量合并用于密度计算
-                            matrixElements = Object.keys(compoundElements);
-                            matrixMasses = matrixResults.map(([_, mass]) => mass);
-                        } 
-                        // 高熵硬质相计算
-                        else {
-                            // 计算每个金属元素的碳化物质量和碳质量
-                            const matrixResults = [];
-                            let totalMetalMass = 0;
-                            let totalCarbonMassMatrix = 0; // 硬质相中的碳质量
-                            
-                            metalElements.forEach((elem, i) => {
-                                const ratio = metalRatios[i];
-                                const cType = carbideTypesHP[i];
-                                const [metalAtoms, carbonAtoms] = carbideTypes[cType];
-                                
-                                // 计算该金属元素的摩尔质量和碳的摩尔质量
-                                const elementMolarMass = atomicWeights[elem];
-                                const carbonMolarMass = atomicWeights['C'];
-                                
-                                // 计算该金属元素形成的碳化物分子量
-                                const carbideMolarMass = metalAtoms * elementMolarMass + carbonAtoms * carbonMolarMass;
-                                
-                                // 该金属元素在总金属中的摩尔分数
-                                const totalRatio = metalRatios.reduce((sum, r) => sum + r, 0);
-                                const metalMoleFraction = ratio / totalRatio;
-                                
-                                // 该金属元素形成的碳化物质量
-                                const carbideMass = matrixMass * metalMoleFraction;
-                                
-                                // 该金属元素的质量
-                                const elementMass = carbideMass * (metalAtoms * elementMolarMass) / carbideMolarMass;
-                                
-                                // 碳的质量
-                                const carbonMassFromElement = carbideMass * (carbonAtoms * carbonMolarMass) / carbideMolarMass;
-                                
-                                matrixResults.push([elem, elementMass]);
-                                totalMetalMass += elementMass;
-                                totalCarbonMassMatrix += carbonMassFromElement;
-                            });
-                            
-                            // 添加碳元素
-                            matrixResults.push(['C', totalCarbonMassMatrix]);
-                            totalCarbonMass += totalCarbonMassMatrix; // 添加到总碳量
-                            
-                            // 验证总质量
-                            let totalMatrix = totalMetalMass + totalCarbonMassMatrix;
-                            if (Math.abs(totalMatrix - matrixMass) > 0.001) {
-                                // 按比例调整以确保总质量正确
-                                const scaleFactor = matrixMass / totalMatrix;
-                                matrixResults.forEach(([elem, mass], i) => {
-                                    matrixResults[i][1] = mass * scaleFactor;
-                                    if (elem === 'C') {
-                                        totalCarbonMass = totalCarbonMassMatrix * scaleFactor;
-                                    }
-                                });
-                                totalMatrix = matrixMass;
-                            }
-                            
-                            // 添加到结果
-                            resultLines.push(`\n高熵硬质相(${(matrixMass / totalMass * 100).toFixed(1)}%):`);
-                            matrixResults.forEach(([elem, mass]) => {
-                                const percent = mass / totalMass * 100;
-                                resultLines.push(`  ${elem}: ${mass.toFixed(4)} g (${percent.toFixed(2)} wt%)`);
-                            });
-                            
-                            // 显示碳化物类型信息
-                            const carbideInfo = metalElements.map((elem, i) => `${elem}${carbideTypesHP[i]}`).join(', ');
-                            resultLines.push(`  硬质相总计: ${totalMatrix.toFixed(4)} g (包含: ${carbideInfo})`);
-                            
-                            // 元素和质量合并用于密度计算
-                            matrixElements = [...metalElements, 'C'];
-                            matrixMasses = matrixResults.map(([_, mass]) => mass);
-                        }
-                        
-                        // 添加粘结相中的碳到总碳量
-                        totalCarbonMass += carbonFromCarbides;
-                        
-                        // 粘结相计算
-                        resultLines.push(`\n粘结相(HEA, ${(actualBinderMass / totalMass * 100).toFixed(1)}%):`);
-                        
-                        // 显示纯金属元素
-                        elements.forEach((elem, i) => {
-                            if (sources[i] === 'pure' && binderMasses[i] > 0) {
-                                const mass = binderMasses[i];
-                                const percent = mass / totalMass * 100;
-                                resultLines.push(`  ${elem}(纯金属): ${mass.toFixed(4)} g (${percent.toFixed(2)} wt%)`);
-                            }
-                        });
-                        
-                        // 显示碳化物添加
-                        carbideAdditions.forEach(([carbideType, metalElement, mass]) => {
-                            if (mass > 0) {
-                                const percent = mass / totalMass * 100;
-                                resultLines.push(`  ${carbideType}(为${metalElement}): ${mass.toFixed(4)} g (${percent.toFixed(2)} wt%)`);
-                            }
-                        });
-                        
-                        // 显示从碳化物中引入的碳
-                        if (carbonFromCarbides > 0) {
-                            const percent = carbonFromCarbides / totalMass * 100;
-                            resultLines.push(`  来自碳化物的碳: ${carbonFromCarbides.toFixed(4)} g (${percent.toFixed(2)} wt%)`);
-                        }
-                        
-                        resultLines.push(`  粘结相总计: ${actualBinderMass.toFixed(4)} g`);
-                        
-                        // 显示总碳量
-                        const totalCarbonPercent = totalCarbonMass / totalMass * 100;
-                        resultLines.push(`\n总碳量: ${totalCarbonMass.toFixed(4)} g (${totalCarbonPercent.toFixed(2)} wt%)`);
-                        
-                        // 计算理论密度
-                        resultLines.push(`\n理论密度计算:`);
-                        
-                        // 计算硬质相密度
-                        let matrixDensity = 0;
-                        if (document.querySelector('input[name="hardphaseType"]:checked').value === 'single') {
-                            if (materialDensities[matrixCompound]) {
-                                matrixDensity = materialDensities[matrixCompound];
-                                resultLines.push(`  硬质相(${matrixCompound})密度: ${matrixDensity.toFixed(2)} g/cm³`);
-                            } else {
-                                matrixDensity = calculateDensity(matrixElements, matrixMasses);
-                                resultLines.push(`  硬质相密度: ${matrixDensity.toFixed(2)} g/cm³ (估算值)`);
-                            }
-                        } else {
-                            matrixDensity = calculateDensity(matrixElements, matrixMasses);
-                            resultLines.push(`  硬质相密度: ${matrixDensity.toFixed(2)} g/cm³ (估算值)`);
-                        }
-                        
-                        // 计算粘结相密度
-                        // 首先收集粘结相中的所有元素和质量（包括碳化物中的元素）
-                        const binderAllElements = [];
-                        const binderAllMasses = [];
-                        
-                        // 添加纯金属元素
-                        elements.forEach((elem, i) => {
-                            if (sources[i] === 'pure' && binderMasses[i] > 0) {
-                                binderAllElements.push(elem);
-                                binderAllMasses.push(binderMasses[i]);
-                            }
-                        });
-                        
-                        // 添加碳化物中的元素
-                        carbideAdditions.forEach(([carbideType, metalElement, mass]) => {
-                            if (mass > 0) {
-                                // 解析碳化物中的元素，将M替换为实际金属元素
-                                const carbideElements = parseCompound(carbideType, metalElement);
-                                // 计算碳化物分子量
-                                let totalCarbideMass = 0;
-                                for (const [elem, count] of Object.entries(carbideElements)) {
-                                    totalCarbideMass += atomicWeights[elem] * count;
-                                }
-                                // 计算碳化物中各元素的质量
-                                for (const [elem, count] of Object.entries(carbideElements)) {
-                                    const elementMass = mass * (atomicWeights[elem] * count) / totalCarbideMass;
-                                    binderAllElements.push(elem);
-                                    binderAllMasses.push(elementMass);
-                                }
-                            }
-                        });
-                        
-                        const binderDensity = calculateDensity(binderAllElements, binderAllMasses);
-                        resultLines.push(`  粘结相密度: ${binderDensity.toFixed(2)} g/cm³ (估算值)`);
-                        
-                        // 计算整体密度（混合法则）
-                        const matrixVolFrac = matrixMass / totalMass / matrixDensity;
-                        const binderVolFrac = actualBinderMass / totalMass / binderDensity;
-                        const totalVolFrac = matrixVolFrac + binderVolFrac;
-                        const overallDensity = totalVolFrac > 0 ? 1 / totalVolFrac : 0;
-                        
-                        resultLines.push(`  整体理论密度: ${overallDensity.toFixed(2)} g/cm³`);
-                        
-                        // 计算压坯所需粉末质量
-                        try {
-                            const moldLength = parseFloat(document.getElementById('moldLength').value) || 0;
-                            const moldWidth = parseFloat(document.getElementById('moldWidth').value) || 0;
-                            const moldHeight = parseFloat(document.getElementById('moldHeight').value) || 0;
-                            const pressingLoss = parseFloat(document.getElementById('pressingLoss').value) || 0;
-                            
-                            if (moldLength > 0 && moldWidth > 0 && moldHeight > 0) {
-                                const moldVolume = moldLength * moldWidth * moldHeight / 1000; // 转换为cm³
-                                const powderMass = moldVolume * overallDensity;
-                                const powderMassWithLoss = powderMass * (1 + pressingLoss / 100);
-                                
-                                resultLines.push(`\n压制模具计算:`);
-                                resultLines.push(`  模具尺寸: ${moldLength} × ${moldWidth} × ${moldHeight} mm`);
-                                resultLines.push(`  模具体积: ${moldVolume.toFixed(3)} cm³`);
-                                resultLines.push(`  理论粉末质量: ${powderMass.toFixed(2)} g`);
-                                resultLines.push(`  考虑压制损失(${pressingLoss}%): ${powderMassWithLoss.toFixed(2)} g`);
-                            }
-                        } catch (e) {
-                            // 忽略模具尺寸输入错误
-                        }
-                    }
+                        let molarMass = atomicWeights[item.element];
+                        let massGrams = 0;
+                        let moles = 0;
 
-                    // 显示结果
-                    resultText.textContent = resultLines.join('\n');
+                        if (inputMode === 'atomicRatio') {
+                            moles = item.ratio;
+                            massGrams = moles * molarMass;
+                        } else if (inputMode === 'massRatio') {
+                            massGrams = item.ratio;
+                            moles = massGrams / molarMass;
+                        } else if (inputMode === 'massPercent') {
+                            massGrams = totalMass * (item.ratio / 100);
+                            moles = massGrams / molarMass;
+                        } else if (inputMode === 'massGrams') {
+                            massGrams = item.ratio;
+                            moles = massGrams / molarMass;
+                            totalMass_input += massGrams;
+                        }
+                        
+                        normalizedData.push({ ...item, molarMass, moles, massGrams });
+                        totalMoles += moles;
+                    });
                     
-                } catch (error) {
-                    resultText.textContent = `计算错误: ${error.message}`;
-                    console.error(error);
+                    // 最终质量百分比和克数
+                    if (inputMode === 'massGrams') {
+                        totalMass_g = totalMass_input;
+                    } else if (inputMode === 'massPercent') {
+                        totalMass_g = totalMass;
+                    } else {
+                        // 原子比/质量比输入，按比例缩放至设定的总质量
+                        totalMass_g = totalMass;
+                        let currentTotalMass = normalizedData.reduce((sum, item) => sum + item.massGrams, 0);
+                        let scaleFactor = currentTotalMass > 0 ? totalMass / currentTotalMass : 0;
+                        
+                        normalizedData = normalizedData.map(item => ({
+                            ...item,
+                            massGrams: item.massGrams * scaleFactor,
+                            moles: item.moles * scaleFactor
+                        }));
+                    }
+                    
+                    // 2. 详细计算和结果整理
+                    results += `高熵合金计算结果:\n\n`;
+                    
+                    totalC_g = 0;
+
+                    normalizedData.forEach((item, index) => {
+                        const finalMass = item.massGrams;
+                        const massPercent = (finalMass / totalMass_g) * 100;
+                        const density = materialDensities[item.element] || 7.0; 
+                        const volume = density > 0 ? finalMass / density : 0;
+                        
+                        totalVolume_cm3 += volume;
+                        
+                        let carbonMassInItem = 0;
+                        if (item.element === 'C') {
+                            carbonMassInItem = finalMass;
+                        }
+                        
+                        totalC_g += carbonMassInItem;
+
+                        results += `${index + 1}. ${item.element} (${massPercent.toFixed(2)} wt%):\n`;
+                        results += `  ${item.element}: ${finalMass.toFixed(4)} g (${massPercent.toFixed(2)} wt%)\n`;
+                        results += `  体积: ${volume.toFixed(4)} cm³\n`;
+                    });
+
+                    // 3. 结果汇总
+                    const averageMolarMass = totalMass_g / totalMoles;
+                    const theoreticalDensity = totalMass_g / totalVolume_cm3;
+                    
+                    results += `\n4. 总碳量: ${totalC_g.toFixed(4)} g (${(totalC_g / totalMass_g * 100).toFixed(2)} wt%)\n`;
+                    results += `\n5. 理论密度计算:\n`;
+                    results += `  总质量: ${totalMass_g.toFixed(4)} g\n`;
+                    results += `  总体积: ${totalVolume_cm3.toFixed(4)} cm³\n`;
+                    results += `  理论密度: ${theoreticalDensity.toFixed(2)} g/cm³\n`;
+                    results += `  平均原子量: ${averageMolarMass.toFixed(2)} g/mol\n`;
+                    results += `\n6. 质量总计: ${totalMass_g.toFixed(4)} g (目标总质量: ${totalMass.toFixed(4)} g)\n`;
+
+
+                } 
+                // --- 硬质合金模式计算 ---
+                else {
+                    const binderPercent = parseFloat(binderPercentInput.value) || 0;
+                    
+                    let additiveTotalPercent = 0;
+                    const additiveRows = Array.from(additiveElements.querySelectorAll('.additive-row'));
+                    const additiveData = [];
+                    additiveRows.forEach(row => {
+                        const source = row.querySelector('.additive-source-select').value;
+                        const contentInput = row.querySelector('.additive-content-input, .additive-content-select');
+                        const content = contentInput.value.trim();
+                        const percent = parseFloat(row.querySelector('.additive-percent-input').value) || 0;
+                        if (content && percent > 0) {
+                            additiveData.push({ source, content, percent });
+                            additiveTotalPercent += percent;
+                        }
+                    });
+
+                    const totalOtherPercent = binderPercent + additiveTotalPercent;
+                    
+                    if (totalOtherPercent > 100.01) { 
+                        resultText.textContent = `错误: 粘结相(${binderPercent.toFixed(1)}%)和添加剂(${additiveTotalPercent.toFixed(1)}%)总质量百分比已超过100%! 请检查输入。`;
+                        return;
+                    }
+
+                    const hardphasePercent = 100 - totalOtherPercent;
+                    
+                    // 各相的实际质量
+                    const hardphaseMass = totalMass * (hardphasePercent / 100);
+                    const binderMass = totalMass * (binderPercent / 100);
+                    const additiveMass = totalMass * (additiveTotalPercent / 100);
+
+                    totalMass_g = totalMass; 
+                    
+                    let hardphaseDetails = {};
+                    let hardphaseTotalC_g = 0;
+                    let hardphaseTotalVolume_cm3 = 0;
+                    let hardphaseDensity = 0;
+
+                    // 1. 硬质相计算 (略，保持不变)
+                    const hardphaseType = document.querySelector('input[name="hardphaseType"]:checked').value;
+                    let hardphaseName = '';
+
+                    if (hardphaseMass > 0) {
+                        if (hardphaseType === 'single') {
+                            const compound = document.getElementById('matrixCompound').value;
+                            hardphaseName = compound;
+                            const { composition, molecularWeight } = parseCompound(compound);
+                            hardphaseDensity = materialDensities[compound] || 14.0;
+                            
+                            if (molecularWeight > 0) {
+                                for (const element in composition) {
+                                    const elementCount = composition[element];
+                                    const elementMass = hardphaseMass * (atomicWeights[element] * elementCount / molecularWeight);
+                                    hardphaseDetails[element] = { mass: elementMass, wtPercent: (elementMass / totalMass) * 100 };
+                                    if (element === 'C') hardphaseTotalC_g += elementMass;
+                                }
+                            }
+                            hardphaseTotalVolume_cm3 = hardphaseMass / hardphaseDensity;
+                        } else {
+                            // 高熵硬质相 (HE Hardphase) 略，保持不变
+                            const heHardphaseRows = Array.from(hardphaseElements.querySelectorAll('.hardphase-row'));
+                            let heHardphaseElementsData = [];
+                            heHardphaseRows.forEach(row => {
+                                const element = row.querySelector('.hp-element-select').value.trim();
+                                const ratio = parseFloat(row.querySelector('.hp-ratio-input').value) || 0;
+                                const carbideType = row.querySelector('.hp-carbide-type-select').value;
+                                if (element && ratio > 0) {
+                                    heHardphaseElementsData.push({ element, ratio, carbideType });
+                                }
+                            });
+
+                            let totalMetalMass_ratio = 0;
+                            let totalC_moles_carbide = 0;
+
+                            heHardphaseElementsData.forEach(item => {
+                                const [metalRatio, carbonRatio] = carbideTypes[item.carbideType];
+                                const moles = item.ratio; 
+                                const molarMass = atomicWeights[item.element] || 0;
+                                
+                                totalMetalMass_ratio += moles * molarMass;
+                                totalC_moles_carbide += moles * (carbonRatio / metalRatio);
+                                
+                                hardphaseName += item.element + (item.ratio > 1 ? item.ratio.toFixed(0) : '') + item.carbideType.substring(0, 1) + 'x';
+                            });
+
+                            const totalHardphaseMass_ratio = totalMetalMass_ratio + totalC_moles_carbide * atomicWeights['C'];
+                            const scaleFactor = totalHardphaseMass_ratio > 0 ? hardphaseMass / totalHardphaseMass_ratio : 0;
+
+                            let totalCarbonMassInHE = totalC_moles_carbide * atomicWeights['C'] * scaleFactor;
+                            
+                            heHardphaseElementsData.forEach(item => {
+                                const itemMass = item.ratio * atomicWeights[item.element] * scaleFactor;
+                                const density = materialDensities[item.element] || 10.0;
+                                hardphaseDetails[item.element] = { mass: itemMass, wtPercent: (itemMass / totalMass) * 100, volume: itemMass / density };
+                                hardphaseTotalVolume_cm3 += itemMass / density;
+                            });
+                            
+                            hardphaseDetails['C'] = { mass: totalCarbonMassInHE, wtPercent: (totalCarbonMassInHE / totalMass) * 100, volume: totalCarbonMassInHE / (materialDensities['C'] || 2.26) };
+                            hardphaseTotalC_g = totalCarbonMassInHE;
+                            hardphaseTotalVolume_cm3 += hardphaseDetails['C'].volume;
+
+                            hardphaseDensity = hardphaseTotalVolume_cm3 > 0 ? hardphaseMass / hardphaseTotalVolume_cm3 : 14.0;
+                        }
+                    }
+
+                    // 2. 粘结相计算 (HEA) (略，保持不变)
+                    const binderElementRows = Array.from(elementsContainer.querySelectorAll('.element-row'));
+                    const binderInputMode = document.getElementById('binderMode').value;
+                    let binderDetails = {};
+                    let binderTotalC_g = 0;
+                    let binderTotalVolume_cm3 = 0;
+                    let binderDensity = 8.54; 
+
+                    if (binderMass > 0) {
+                        const binderCalcResult = calculateHEA(binderElementRows, binderInputMode, binderMass, totalMass);
+                        binderDetails = binderCalcResult.details;
+                        binderTotalC_g = binderCalcResult.totalC_g;
+                        binderTotalVolume_cm3 = binderCalcResult.totalVolume_cm3;
+                        binderDensity = binderCalcResult.theoreticalDensity;
+                    }
+
+                    // 3. 添加剂计算
+                    let additiveDetails = {};
+                    let additiveTotalC_g = 0;
+                    let additiveTotalVolume_cm3 = 0;
+                    let additiveMassSum = 0;
+                    
+                    additiveData.forEach(item => {
+                        const itemMass = totalMass * (item.percent / 100);
+                        additiveMassSum += itemMass;
+                        
+                        let density = 8.0; 
+                        let volume = 0;
+                        let C_mass = 0;
+                        
+                        if (item.source === 'pure') {
+                            // 纯金属
+                            density = materialDensities[item.content] || 8.0;
+                            volume = density > 0 ? itemMass / density : 0;
+                            additiveDetails[item.content] = { mass: itemMass, wtPercent: (itemMass / totalMass) * 100, isPure: true, density: density };
+                        } else {
+                            // 碳化物
+                            density = materialDensities[item.content] || 8.0;
+                            volume = density > 0 ? itemMass / density : 0;
+                            
+                            const { composition, molecularWeight } = parseCompound(item.content);
+                            if (molecularWeight > 0) {
+                                for (const element in composition) {
+                                    const elementCount = composition[element];
+                                    const elementMass = itemMass * (atomicWeights[element] * elementCount / molecularWeight);
+                                    
+                                    if (element === 'C') {
+                                        C_mass += elementMass;
+                                    }
+                                    
+                                    additiveDetails[`${item.content}-${element}`] = { 
+                                        mass: elementMass, 
+                                        wtPercent: (elementMass / totalMass) * 100, 
+                                        compound: item.content,
+                                        density: density // 使用化合物的密度
+                                    };
+                                }
+                            }
+                        }
+                        
+                        additiveTotalC_g += C_mass;
+                        additiveTotalVolume_cm3 += volume; 
+                    });
+                    
+                    // 计算添加剂的加权平均密度
+                    const additiveAverageDensity = additiveTotalVolume_cm3 > 0 ? additiveMassSum / additiveTotalVolume_cm3 : 0;
+
+                    // 汇总总碳量和总体积
+                    totalC_g = hardphaseTotalC_g + binderTotalC_g + additiveTotalC_g;
+                    totalVolume_cm3 = hardphaseTotalVolume_cm3 + binderTotalVolume_cm3 + additiveTotalVolume_cm3;
+                    const theoreticalDensity = totalVolume_cm3 > 0 ? totalMass_g / totalVolume_cm3 : 0; 
+
+                    // 4. 结果格式化
+                    
+                    // 硬质相结果 (略，保持不变)
+                    results += `硬质合金计算结果:\n\n`;
+                    results += `1. 硬质相(${hardphaseName}, ${hardphasePercent.toFixed(1)}%):\n`;
+                    for (const element in hardphaseDetails) {
+                        const detail = hardphaseDetails[element];
+                        results += `  ${element}: ${detail.mass.toFixed(4)} g (${detail.wtPercent.toFixed(2)} wt%)\n`;
+                    }
+                    results += `  硬质相总计: ${hardphaseMass.toFixed(4)} g\n`;
+                    results += `\n`;
+
+                    // 粘结相结果 (略，保持不变)
+                    results += `2. 粘结相(HEA, ${binderPercent.toFixed(1)}%):\n`;
+                    if (binderMass > 0) {
+                        for (const element in binderDetails) {
+                            const detail = binderDetails[element];
+                            results += `  ${element}(${detail.source === 'pure' ? '纯金属' : detail.carbideType}): ${detail.mass.toFixed(4)} g (${detail.wtPercent.toFixed(2)} wt%)\n`;
+                        }
+                        results += `  粘结相总计: ${binderMass.toFixed(4)} g\n`;
+                    } else {
+                         results += `  未添加粘结相\n`;
+                         results += `  粘结相总计: ${binderMass.toFixed(4)} g\n`;
+                    }
+                    results += `\n`;
+                    
+                    // 添加剂结果 (略，保持不变)
+                    results += `3. 添加剂(${additiveTotalPercent.toFixed(1)}%):\n`;
+                    if (additiveMass > 0) {
+                        let currentCompound = '';
+                        const sortedKeys = Object.keys(additiveDetails).sort((a, b) => {
+                            const detailA = additiveDetails[a];
+                            const detailB = additiveDetails[b];
+                            if (detailA.isPure && !detailB.isPure) return -1;
+                            if (!detailA.isPure && detailB.isPure) return 1;
+                            return a.localeCompare(b);
+                        });
+                        
+                        sortedKeys.forEach(key => {
+                            const detail = additiveDetails[key];
+                            const isCompound = key.includes('-');
+                            
+                            if (detail.isPure) {
+                                results += `  ${key}(纯金属): ${detail.mass.toFixed(4)} g (${detail.wtPercent.toFixed(2)} wt%)\n`;
+                            } else if (isCompound) {
+                                const [compoundName, element] = key.split('-');
+                                if (compoundName !== currentCompound) {
+                                    results += `  化合物 ${compoundName}:\n`;
+                                    currentCompound = compoundName;
+                                }
+                                results += `    ${element}: ${detail.mass.toFixed(4)} g (${detail.wtPercent.toFixed(2)} wt%)\n`;
+                            }
+                        });
+
+                        results += `  添加剂总计: ${additiveMass.toFixed(4)} g\n`;
+                    } else {
+                        results += `  未添加任何添加剂\n`;
+                        results += `  添加剂总计: ${additiveMass.toFixed(4)} g\n`;
+                    }
+                    results += `\n`;
+
+                    // 总碳量 (略，保持不变)
+                    results += `4. 总碳量:\n`;
+                    results += `  硬质相 C含量: ${hardphaseTotalC_g.toFixed(4)} g (${(hardphaseTotalC_g / totalMass * 100).toFixed(2)} wt%)\n`;
+                    results += `  粘结相 C含量: ${binderTotalC_g.toFixed(4)} g (${(binderTotalC_g / totalMass * 100).toFixed(2)} wt%)\n`;
+                    results += `  添加剂 C含量: ${additiveTotalC_g.toFixed(4)} g (${(additiveTotalC_g / totalMass * 100).toFixed(2)} wt%)\n`;
+                    results += `  总计: ${totalC_g.toFixed(4)} g (${(totalC_g / totalMass * 100).toFixed(2)} wt%)\n`;
+                    results += `\n`;
+
+                    // 5. 理论密度 (核心修改: 增加添加剂密度)
+                    results += `5. 理论密度计算:\n`;
+                    results += `  硬质相(${hardphaseName || 'N/A'})密度: ${hardphaseMass > 0 ? hardphaseDensity.toFixed(2) : 0.00} g/cm³\n`;
+                    results += `  粘结相密度: ${binderMass > 0 ? binderDensity.toFixed(2) : 0.00} g/cm³ (估算值)\n`;
+                    results += `  添加剂平均密度: ${additiveMass > 0 ? additiveAverageDensity.toFixed(2) : 0.00} g/cm³\n`; // 新增行
+                    results += `  整体理论密度: ${theoreticalDensity.toFixed(2)} g/cm³\n`;
+                    results += `\n`;
+                    
+                    // 模具尺寸 (略，保持不变)
+                    const moldLength = parseFloat(document.getElementById('moldLength').value) || 0;
+                    const moldWidth = parseFloat(document.getElementById('moldWidth').value) || 0;
+                    const moldHeight = parseFloat(document.getElementById('moldHeight').value) || 0;
+                    const pressingLoss = parseFloat(document.getElementById('pressingLoss').value) || 0;
+                    
+                    if (moldLength > 0 && moldWidth > 0 && moldHeight > 0 && theoreticalDensity > 0) {
+                        const moldVolume = moldLength * moldWidth * moldHeight / 1000; // 转换为cm3
+                        const theoreticalMass = theoreticalDensity * moldVolume;
+                        const actualRequiredMass = theoreticalMass * (1 + pressingLoss / 100);
+                        
+                        let moldResults = `6. 模具尺寸计算:\n`;
+                        moldResults += `  模具体积: ${moldVolume.toFixed(2)} cm³\n`;
+                        moldResults += `  理论需粉质量: ${theoreticalMass.toFixed(4)} g\n`;
+                        moldResults += `  考虑压制损失(${pressingLoss.toFixed(1)}%)后需粉质量: ${actualRequiredMass.toFixed(4)} g\n`;
+                        results += moldResults;
+                    }
+
+                    // 质量总计 (略，保持不变)
+                    results += `\n7. 质量总计: ${totalMass_g.toFixed(4)} g (目标总质量: ${totalMass.toFixed(4)} g)\n`;
                 }
+
+                resultText.textContent = results;
             }
 
-            // 事件监听器
-            calcModeRadios.forEach(radio => {
-                radio.addEventListener('change', toggleCalcMode);
-            });
-            
-            hardphaseTypeRadios.forEach(radio => {
-                radio.addEventListener('change', toggleHardphaseType);
-            });
-            
-            matrixPercent.addEventListener('input', updateBinderPercent);
-            hardphasePercent.addEventListener('input', updateBinderPercent);
-            
-            addElementBtn.addEventListener('click', () => {
-                addElementRow('', 1);
-            });
-            
-            deleteElementBtn.addEventListener('click', () => {
-                const rows = document.querySelectorAll('.element-row');
-                if (rows.length > 1) {
-                    rows[rows.length - 1].remove();
-                }
-            });
-            
-            addHardphaseElementBtn.addEventListener('click', () => {
-                addHardphaseElementRow('', 1);
-            });
-            
-            delHardphaseElementBtn.addEventListener('click', () => {
-                const rows = document.querySelectorAll('.hardphase-row');
-                if (rows.length > 1) {
-                    rows[rows.length - 1].remove();
-                }
-            });
-            
-            calculateBtn.addEventListener('click', calculate);
+            // 粘结相/HEAA的计算逻辑封装 (用于硬质合金中的粘结相) (略，保持不变)
+            function calculateHEA(elementRows, inputMode, targetMass, totalAlloyMass) {
+                let elementsData = [];
+                elementRows.forEach(row => {
+                    const elementInput = row.querySelector('.element-input, .element-select');
+                    const element = elementInput.value.trim();
+                    const ratio = parseFloat(row.querySelector('.ratio-input').value) || 0;
+                    const source = row.querySelector('.source-select').value;
+                    const carbideType = row.querySelector('.carbide-type-select').value;
+                    
+                    if (element && ratio > 0) {
+                        elementsData.push({ element, ratio, source, carbideType });
+                    }
+                });
+                
+                let normalizedData = [];
+                let currentTotalMass = 0;
 
-            // 初始化
-            initElements();
-            initHardphaseElements();
-            toggleCalcMode();
+                elementsData.forEach(item => {
+                    if (!atomicWeights[item.element]) return;
+                    
+                    const molarMass = atomicWeights[item.element];
+                    let massGrams = 0;
+                    let moles = 0;
+
+                    if (inputMode === 'atomicRatio') {
+                        moles = item.ratio;
+                        massGrams = moles * molarMass;
+                    } else if (inputMode === 'massRatio') {
+                        massGrams = item.ratio;
+                        moles = massGrams / molarMass;
+                    } else if (inputMode === 'massPercent') {
+                        massGrams = targetMass * (item.ratio / 100);
+                        moles = massGrams / molarMass;
+                    } else if (inputMode === 'massGrams') {
+                        massGrams = item.ratio;
+                        moles = massGrams / molarMass;
+                    }
+                    
+                    currentTotalMass += massGrams;
+                    normalizedData.push({ ...item, molarMass, moles, massGrams });
+                });
+
+                if (inputMode === 'atomicRatio' || inputMode === 'massRatio') {
+                    const scaleFactor = currentTotalMass > 0 ? targetMass / currentTotalMass : 0;
+                    normalizedData = normalizedData.map(item => ({
+                        ...item,
+                        massGrams: item.massGrams * scaleFactor,
+                        moles: item.moles * scaleFactor
+                    }));
+                    currentTotalMass = targetMass;
+                } 
+
+                let binderDetails = {};
+                let totalC_g = 0;
+                let totalVolume_cm3 = 0;
+                
+                normalizedData.forEach(item => {
+                    const finalMass = item.massGrams;
+                    const density = materialDensities[item.element] || 7.0; 
+                    const volume = density > 0 ? finalMass / density : 0;
+                    
+                    totalVolume_cm3 += volume;
+                    
+                    let carbonMassInItem = 0;
+                    if (item.element === 'C') {
+                        carbonMassInItem = finalMass;
+                    } else if (item.source === 'carbide') {
+                        const [metalRatio, carbonRatio] = carbideTypes[item.carbideType];
+                        const carbonMolarMass = atomicWeights['C'];
+                        const metalMolarMass = atomicWeights[item.element];
+                        const compoundMolarMass = metalRatio * metalMolarMass + carbonRatio * carbonMolarMass;
+                        
+                        const carbonMassFraction = compoundMolarMass > 0 ? (carbonRatio * carbonMolarMass) / compoundMolarMass : 0;
+                        carbonMassInItem = finalMass * carbonMassFraction;
+                    }
+                    totalC_g += carbonMassInItem;
+
+                    binderDetails[item.element] = { 
+                        mass: finalMass, 
+                        wtPercent: (finalMass / totalAlloyMass) * 100, 
+                        source: item.source,
+                        carbideType: item.carbideType
+                    };
+                });
+                
+                const theoreticalDensity = currentTotalMass / totalVolume_cm3;
+
+                return {
+                    details: binderDetails,
+                    totalC_g: totalC_g,
+                    totalVolume_cm3: totalVolume_cm3,
+                    theoreticalDensity: theoreticalDensity || 8.54 
+                };
+            }
+
+            // --- 事件监听器 ---
+
+            // 模式切换
+            calcModeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    switchMode(this.value);
+                });
+            });
+
+            // 初始化（默认HEAA模式）
+            switchMode('heaa');
+
+            // 硬质相类型切换 (单一化合物 vs 高熵硬质相) (略，保持不变)
+            hardphaseTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    singleHardphase.classList.toggle('hidden', this.value !== 'single');
+                    heHardphase.classList.toggle('hidden', this.value !== 'he');
+                });
+            });
+
+            // 粘结相百分比输入 (略，保持不变)
+            binderPercentInput.addEventListener('input', updatePhasePercentages);
+            
+            // 元素行操作（粘结相/HEAA）
+            addElementBtn.addEventListener('click', () => {
+                const currentMode = document.querySelector('input[name="calcMode"]:checked').value;
+                addElementRow('', 1, 'pure', 'MC', currentMode);
+            });
+            deleteElementBtn.addEventListener('click', () => {
+                if (elementsContainer.lastElementChild) {
+                    // 在删除前，先销毁可能存在的 autocomplete 实例
+                    const lastRow = elementsContainer.lastElementChild;
+                    const inputElement = lastRow.querySelector('.pure-metal-input');
+                    if (inputElement && $(inputElement).data('ui-autocomplete')) {
+                        $(inputElement).autocomplete('destroy');
+                    }
+                    elementsContainer.removeChild(lastRow);
+                }
+            });
+
+            // 硬质相元素操作（HE Hardphase） (略，保持不变)
+            addHardphaseElementBtn.addEventListener('click', () => addHardphaseElementRow('W', 1));
+            delHardphaseElementBtn.addEventListener('click', () => {
+                if (hardphaseElements.lastElementChild) {
+                    hardphaseElements.removeChild(hardphaseElements.lastElementChild);
+                }
+            });
+
+            // 添加剂元素操作 (略，保持不变)
+            addAdditiveElementBtn.addEventListener('click', () => addAdditiveElementRow('compound', 'WC', 0)); 
+            delAdditiveElementBtn.addEventListener('click', () => {
+                if (additiveElements.lastElementChild) {
+                    // 销毁可能存在的 autocomplete 实例
+                    const lastRow = additiveElements.lastElementChild;
+                    const inputElement = lastRow.querySelector('.pure-metal-input');
+                    if (inputElement && $(inputElement).data('ui-autocomplete')) {
+                        $(inputElement).autocomplete('destroy');
+                    }
+                    additiveElements.removeChild(lastRow);
+                    updatePhasePercentages(); 
+                }
+            });
+
+            // 计算按钮
+            calculateBtn.addEventListener('click', calculate);
         });
     </script>
 </body>
